@@ -34,6 +34,7 @@ public class Trigger implements ClockObserver, CameraSubject {
     float phase;
     float t_; // when will next cloud be created 
     int mode = SLEEPING;
+    boolean blueThermal = false; // true = lift with no visible cloud
 
     // Fixed seed so that model is deterministic (state(T) is same every game play).
     static Random random = new Random(0); // pseudo rnds for this class
@@ -120,10 +121,35 @@ public class Trigger implements ClockObserver, CameraSubject {
 
     private static float STRENGTH_MIN = 0.1f;
 
-    /** Makes a new cloud start bubbling up. */
+    /**
+     * Returns the current thermal strength factoring in the trigger's
+     * own lifecycle within a cycle. Stage 1: building (first 20% of cycle),
+     * Stage 2: full strength (middle 60%), Stage 3: dying (last 20%).
+     */
+    private float currentStrength() {
+		float elapsed = xcModelViewer.clock.getTime() - (t_ - cycleLength);
+		float fraction = elapsed / cycleLength;
+		if (fraction < 0) fraction = 0;
+		if (fraction > 1) fraction = 1;
+
+		if (fraction < 0.2f) {
+			// Stage 1: building - ramps from 50% to 100%
+			return thermalStrength * (0.5f + 2.5f * fraction);
+		} else if (fraction < 0.8f) {
+			// Stage 2: full strength
+			return thermalStrength;
+		} else {
+			// Stage 3: dying off - ramps from 100% to 30%
+			float decay = (fraction - 0.8f) / 0.2f;
+			return thermalStrength * (1.0f - 0.7f * decay);
+		}
+    }
+
+    /** Makes a new cloud start bubbling up. Uses current lifecycle strength. */
     private void makeCloud() {
-		if (thermalStrength >= STRENGTH_MIN) {
-			Cloud cloud = new Cloud(xcModelViewer, x, y, thermalStrength, duration * cycleLength);
+		float strength = currentStrength();
+		if (strength >= STRENGTH_MIN) {
+			Cloud cloud = new Cloud(xcModelViewer, x, y, strength, duration * cycleLength, !blueThermal);
 		}
     }
 
@@ -133,7 +159,7 @@ public class Trigger implements ClockObserver, CameraSubject {
 			Task task = xcModelViewer.xcModel.task;
 			float x_ = x + dt * task.wind_x;
 			float y_ = y + dt * task.wind_y;
-			Cloud cloud = new Cloud(xcModelViewer, x_, y_, thermalStrength, duration * cycleLength);
+			Cloud cloud = new Cloud(xcModelViewer, x_, y_, thermalStrength, duration * cycleLength, !blueThermal);
 			cloud.setAge(dt);
 		}
     }

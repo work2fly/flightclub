@@ -26,6 +26,7 @@ public class Glider extends MovingBody {
     float[] air = new float[] {0, 0, 0}; // air movement
     private float ground = 0; // ground level
     protected float timeFlying = 0;
+    private float energySpeed = 0; // for total energy model - tracks speed changes
 
     // unique ID for each instance of this class
     int myID;
@@ -85,6 +86,7 @@ public class Glider extends MovingBody {
 		this.v[1] = v[1];
 		iP = 0;
 		setPolar();
+		energySpeed = speed;
 		this.tail.reset();
 		nextTurn = 0;
 		timeFlying = 0;
@@ -185,6 +187,17 @@ public class Glider extends MovingBody {
 			p[1] += air[1] * dt;
 			if (!drone) {
 				p[2] += air[2] * dt;
+			}
+
+			// total energy: trading speed for height and vice versa
+			// when accelerating (going faster), lose height; when decelerating, gain height
+			if (!drone && energySpeed != speed) {
+				float dSpeed = speed - energySpeed;
+				// energy conservation: dh = -(v2^2 - v1^2) / (2g)
+				// simplified: small speed changes give proportional height changes
+				float dh = -dSpeed * speed * dt * 0.02f;
+				p[2] += dh;
+				energySpeed = speed;
 			}
 
 			// hit the spuds ?

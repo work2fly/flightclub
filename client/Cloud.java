@@ -62,6 +62,7 @@ public class Cloud implements CameraSubject, ClockObserver, LiftSource {
 
     float thermalRadius;
     float coreRadius;
+    boolean visible = true; // false for "blue thermals" (lift with no visible cloud)
 
     // lift unit * size gives max lift. choose so that cloud of size 1
     // gives lift a bit stronger than glider sink, size 2 gives a
@@ -79,8 +80,17 @@ public class Cloud implements CameraSubject, ClockObserver, LiftSource {
 	TODO: params - thermalStrength, duration... ?size
     */
     public Cloud(XCModelViewer xcModelViewer, float x, float y, float size, float lifeSpan) {
+		this(xcModelViewer, x, y, size, lifeSpan, true);
+    }
+
+    /**
+     * Creates a cloud, optionally invisible ("blue thermal").
+     * Blue thermals provide lift but have no visible cloud shape.
+     */
+    public Cloud(XCModelViewer xcModelViewer, float x, float y, float size, float lifeSpan, boolean visible) {
 		this.xcModelViewer = xcModelViewer;
 		this.size = size; 
+		this.visible = visible;
 		this.setColor();
 
 		this.x = x;
@@ -91,7 +101,9 @@ public class Cloud implements CameraSubject, ClockObserver, LiftSource {
 
 		// assume life cycle starts from now
 		lifeCycle = new LifeCycle(xcModelViewer.clock.getTime(), lifeSpan);
-		shape3d = new Shape3d();
+		if (visible) {
+			shape3d = new Shape3d();
+		}
 
 		xcModelViewer.clock.addObserver(this);
 
@@ -116,7 +128,9 @@ public class Cloud implements CameraSubject, ClockObserver, LiftSource {
     /** Destroys references to this cloud and its child objects so it will be garbage collected. */
     public void destroyMe() {
 		// asString();
-		shape3d.obj3d.destroyMe();
+		if (shape3d != null) {
+			shape3d.obj3d.destroyMe();
+		}
 		xcModelViewer.clock.removeObserver(this);
 		registerWithNodes(false);
     }
@@ -202,7 +216,9 @@ public class Cloud implements CameraSubject, ClockObserver, LiftSource {
 		y += wind_y * dt;
 
 		// update my 3d shape
-		shape3d.updateMe(t, dt);
+		if (shape3d != null) {
+			shape3d.updateMe(t, dt);
+		}
 
 		/*
 		  May have drifted into another node's zone. Also, if no
@@ -229,7 +245,9 @@ public class Cloud implements CameraSubject, ClockObserver, LiftSource {
     void setAge(float age) {
 		float now = xcModelViewer.clock.getTime(); 
 		lifeCycle.t0 = now - age;
-		shape3d.dirty = true; // force recalc of shape
+		if (shape3d != null) {
+			shape3d.dirty = true; // force recalc of shape
+		}
     }
 
     public float[] getFocus() {

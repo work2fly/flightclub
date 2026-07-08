@@ -99,7 +99,8 @@ public class GliderManager implements ClockObserver {
 
     /**
        Sets the vertical air movement for a glider. We search the loaded
-       nodes for lift sources (rather than searching the entire model.) 
+       nodes for lift sources (rather than searching the entire model.)
+       Also checks task-level sink zones.
      */
     private void setLift(Glider glider, Node[] nodes) {
 		if (glider == null) return;
@@ -115,6 +116,19 @@ public class GliderManager implements ClockObserver {
 
 		if (ls != null) {
 			lift = ls.getLift(p);
+		}
+
+		// check sink zones if not already in lift
+		if (lift == 0) {
+			SinkZone[] sinkZones = xcModelViewer.xcModel.task.sinkZones;
+			if (sinkZones != null) {
+				for (int i = 0; i < sinkZones.length; i++) {
+					if (sinkZones[i] != null && sinkZones[i].contains(p)) {
+						lift = sinkZones[i].getLift(p);
+						break;
+					}
+				}
+			}
 		}
 
 		// pass message to glider
@@ -156,10 +170,13 @@ public class GliderManager implements ClockObserver {
 
     private float t_ = 0; // time when loadNodes
     static final float T_INTERVAL = 1.19f; // time between calls to loadNodes()
+    static final float COLLISION_RADIUS = 0.3f; // distance at which gliders "collide"
+    static final float BUMP_FORCE = 0.5f; // lateral push on collision
     /**
        Sets the lift for each glider. Also, every T, load the nodes
        around 'the' glider. If networked then we don't do anything
        until we know from the server what the model time is.
+       Also checks for collisions between gliders.
      */
     public void tick(float t, float dt) {
 		if (xcModelViewer.xcNet != null && !xcModelViewer.netTimeFlag) {
@@ -187,6 +204,35 @@ public class GliderManager implements ClockObserver {
 
 		if ((t - t_) > T_INTERVAL) {
 			this.loadNodes(t);
+		}
+
+		// check for mid-air collisions
+		checkCollisions(dt);
+    }
+
+    /**
+     * Checks for collisions between flying gliders.
+     * On collision, both gliders get pushed apart laterally.
+     */
+    private void checkCollisions(float dt) {
+		if (gliderUser == null || gliderUser.landed) return;
+		if (gliderAIs == null) return;
+
+		for (int i = 0; i < gliderAIs.length; i++) {
+			if (gliderAIs[i] == null || gliderAIs[i].landed) continue;
+			float dx = gliderUser.p[0] - gliderAIs[i].p[0];
+			float dy = gliderUser.p[1] - gliderAIs[i].p[1];
+			float dz = gliderUser.p[2] - gliderAIs[i].p[2];
+			float distSqd = dx * dx + dy * dy + dz * dz;
+			if (distSqd < COLLISION_RADIUS * COLLISION_RADIUS && distSqd > 0) {
+				// push apart
+				float dist = (float) Math.sqrt(distSqd);
+				float force = BUMP_FORCE * dt / dist;
+				gliderUser.p[0] += dx * force;
+				gliderUser.p[1] += dy * force;
+				gliderAIs[i].p[0] -= dx * force;
+				gliderAIs[i].p[1] -= dy * force;
+			}
 		}
     }
 

@@ -20,6 +20,7 @@ public class Task implements CameraSubject {
     TurnPointManager turnPointManager;
     RoadManager roadManager;
     Trigger[] triggers;
+    SinkZone[] sinkZones;
     float wind_x, wind_y;
 
     // for the default course
@@ -49,18 +50,41 @@ public class Task implements CameraSubject {
 		wind_x = 0.1f;
 		wind_y = 0.1f;
 
-		// triggers
-		triggers = new Trigger[4 * 4 * 6];
+		// triggers (thermals with visible clouds + some blue thermals)
+		int numRegular = 4 * 4 * 6;
+		int numBlue = 3;
+		triggers = new Trigger[numRegular + numBlue];
 		for (int i = 0; i < 4; i++) {
 			for (int j = 0; j < 4; j++) {
 				flatLand(i * HEXAGON, j * HEXAGON);
 			}
 		}
 
+		// add a few blue thermals (invisible lift sources - no cloud marker)
+		Trigger bt;
+		bt = new Trigger(xcModelViewer, HEXAGON * 1.2f, HEXAGON * 1.8f);
+		bt.blueThermal = true;
+		triggers[next++] = bt;
+		bt = new Trigger(xcModelViewer, HEXAGON * 2.8f, HEXAGON * 0.7f);
+		bt.blueThermal = true;
+		triggers[next++] = bt;
+		bt = new Trigger(xcModelViewer, HEXAGON * 0.4f, HEXAGON * 3.2f);
+		bt.blueThermal = true;
+		triggers[next++] = bt;
+
 		// roads - specify start and end points
 		float[][] r1 = new float[][] {{0, 0, 0}, {0.8f * x, x, 0}, {x, 2 * x, 0}, {2 * x, 4 * x,0}};
 		float[][] r2 = new float[][] {{0, x, 0}, {x, 1.4f * x, 0}, {2 * x, 1.2f * x, 0}, {3 * x, 2 * x, 0}, {4 * x, 2 * x,0}};
 		roadManager = new RoadManager(xcModelViewer, new float[][][] {r1, r2});
+
+		// sink zones - rectangles of descending air between thermals
+		sinkZones = new SinkZone[4];
+		float sinkW = HEXAGON * 0.4f;
+		float sinkH = HEXAGON * 0.6f;
+		sinkZones[0] = new SinkZone(xcModelViewer, HEXAGON * 0.5f, HEXAGON * 1.5f, sinkW, sinkH, 1.5f);
+		sinkZones[1] = new SinkZone(xcModelViewer, HEXAGON * 1.5f, HEXAGON * 0.5f, sinkW, sinkH, 1.0f);
+		sinkZones[2] = new SinkZone(xcModelViewer, HEXAGON * 2.5f, HEXAGON * 2.5f, sinkW, sinkH, 2.0f);
+		sinkZones[3] = new SinkZone(xcModelViewer, HEXAGON * 3.0f, HEXAGON * 1.0f, sinkW, sinkH, 1.2f);
   
 		nodeManager = new NodeManager(xcModelViewer, this);
     }
