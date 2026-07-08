@@ -77,37 +77,60 @@ public class ModelFrame extends Frame implements ModelEnv {
 		return Toolkit.getDefaultToolkit().getImage(s);
     }
 	
+    private Clip[] beepClips = null;
+
+    /**
+     * Pre-loads sound clips so they can be replayed without opening new lines.
+     * Called lazily on first play().
+     */
+    private void initSounds() {
+		beepClips = new Clip[4];
+		for (int i = 0; i < 4; i++) {
+			try {
+				String name = "beep" + i + ".wav";
+				InputStream is = getClass().getResourceAsStream("/" + name);
+				if (is == null) {
+					is = new FileInputStream(new File(System.getProperty("user.dir"), name));
+				}
+				AudioInputStream sourceStream = AudioSystem.getAudioInputStream(is);
+				AudioFormat sourceFormat = sourceStream.getFormat();
+				// Convert to 16-bit signed PCM at 44.1kHz — universally supported
+				AudioFormat targetFormat = new AudioFormat(
+					AudioFormat.Encoding.PCM_SIGNED,
+					44100f,
+					16,
+					1,
+					2,
+					44100f,
+					false
+				);
+				AudioInputStream converted = AudioSystem.getAudioInputStream(targetFormat, sourceStream);
+				Clip clip = AudioSystem.getClip();
+				clip.open(converted);
+				beepClips[i] = clip;
+			} catch (Exception e) {
+				System.out.println("Error loading sound beep" + i + ".wav: " + e);
+			}
+		}
+    }
+
     public void play(String s) {
-		InputStream path = getClass().getResourceAsStream("/" + s);
-		if (path == null) {
-			// fall back to file in working directory
-			try { path = new FileInputStream(new File(System.getProperty("user.dir"), s)); }
-			catch (Exception e2) { return; }
+		if (beepClips == null) {
+			initSounds();
 		}
-		try {
-			AudioInputStream sourceStream = AudioSystem.getAudioInputStream(path);
-			AudioFormat sourceFormat = sourceStream.getFormat();
-
-			// Convert to a format the system is guaranteed to support:
-			// 16-bit signed PCM, same sample rate, mono
-			AudioFormat targetFormat = new AudioFormat(
-				AudioFormat.Encoding.PCM_SIGNED,
-				sourceFormat.getSampleRate(),
-				16,
-				sourceFormat.getChannels(),
-				sourceFormat.getChannels() * 2,
-				sourceFormat.getSampleRate(),
-				false
-			);
-
-			AudioInputStream convertedStream = AudioSystem.getAudioInputStream(targetFormat, sourceStream);
-			Clip clip = AudioSystem.getClip();
-			clip.open(convertedStream);
+		// Map filename to clip index
+		int index = -1;
+		for (int i = 0; i < 4; i++) {
+			if (s.equals("beep" + i + ".wav")) {
+				index = i;
+				break;
+			}
+		}
+		if (index >= 0 && beepClips[index] != null) {
+			Clip clip = beepClips[index];
+			clip.stop();
+			clip.setFramePosition(0);
 			clip.start();
-		}
-		catch (Exception e) {
-			String msg = "Error playing sound: " + s + "\n";
-			System.out.println(msg + e.toString());
 		}
     }
 
