@@ -79,9 +79,30 @@ public class ModelFrame extends Frame implements ModelEnv {
 	
     public void play(String s) {
 		InputStream path = getClass().getResourceAsStream("/" + s);
+		if (path == null) {
+			// fall back to file in working directory
+			try { path = new FileInputStream(new File(System.getProperty("user.dir"), s)); }
+			catch (Exception e2) { return; }
+		}
 		try {
+			AudioInputStream sourceStream = AudioSystem.getAudioInputStream(path);
+			AudioFormat sourceFormat = sourceStream.getFormat();
+
+			// Convert to a format the system is guaranteed to support:
+			// 16-bit signed PCM, same sample rate, mono
+			AudioFormat targetFormat = new AudioFormat(
+				AudioFormat.Encoding.PCM_SIGNED,
+				sourceFormat.getSampleRate(),
+				16,
+				sourceFormat.getChannels(),
+				sourceFormat.getChannels() * 2,
+				sourceFormat.getSampleRate(),
+				false
+			);
+
+			AudioInputStream convertedStream = AudioSystem.getAudioInputStream(targetFormat, sourceStream);
 			Clip clip = AudioSystem.getClip();
-			clip.open(AudioSystem.getAudioInputStream(path));
+			clip.open(convertedStream);
 			clip.start();
 		}
 		catch (Exception e) {
