@@ -29,37 +29,37 @@ java -cp out flightclub.task.TaskFrame             # task designer
 
 ### Priority 1
 
-| Item | Feasibility | Notes |
-|------|-------------|-------|
-| **Terrain / finish TaskDesigner** | ✅ High | The designer works now. Road parsing code is stubbed (`// roads - TODO`). An AI can generate the road/hill parsing logic to match the game's existing `RoadManager` and `Hill` classes. ~2-4 hours work. |
-| **Shadows** | ⚠️ Medium | The 3D engine is software-rendered (no OpenGL). Adding shadows means projecting each Obj3d onto the terrain plane. Feasible but requires understanding the depth-sort system. ~1 day. |
-| **Collision detection** | ✅ High | Simple bounding-sphere checks between gliders. The positions are already tracked in `Glider.p[]`. Straightforward to implement. ~2 hours. |
-| **Database backend for league table** | ✅ High | SQLite + JDBC is trivial to add. Store task ID, pilot name, completion time. Could even add a local leaderboard UI panel. ~3 hours. |
+| Item | Feasibility | Status |
+|------|-------------|--------|
+| **Terrain / finish TaskDesigner** | ✅ High | PARTIAL — Designer crashes fixed. Road parsing still stubbed. |
+| **Shadows** | ⚠️ Medium | Not started |
+| **Collision detection** | ✅ High | ✅ DONE — Bounding sphere collision with lateral push |
+| **Database backend for league table** | ✅ High | Not started |
 
 ### Priority 2
 
-| Item | Feasibility | Notes |
-|------|-------------|-------|
-| **Sink (rectangles)** | ✅ High | Inverse of thermals — just negative lift zones. Add a `SinkSource` analogous to `LiftSource`. ~1 hour. |
-| **Blue thermals** | ✅ High | Dan described exactly what to do: use Cloud class but with `shape3d = null`. Just thermals with no visible cloud above. ~30 min. |
-| **Balloons** | ✅ Done | Already implemented and working. |
-| **Thermal cycle (3 stages)** | ⚠️ Medium | Currently thermals are either on or off. Adding lifecycle state (forming → mature → dying) to `Trigger` class with time-based transitions. ~3 hours. |
-| **Vector maps** | ⚠️ Medium | Dan noted he fudged this with view #5. A proper mini-map overlay on the canvas showing task/position would be ~4 hours. |
-| **Menus** | ✅ High | Replace the keyboard-prompt system with an AWT menu or simple button panel for glider selection. ~2 hours. |
-| **Fast depth sort** | ⚠️ Medium | Current sort in `Obj3dManager` is adequate for the polygon count. BSP or painter's algorithm refinements possible but may not be needed. |
-| **Exploding wings / falling** | ✅ High | Fun cosmetic feature. On "crash" create particle debris with gravity physics. ~3 hours. |
+| Item | Feasibility | Status |
+|------|-------------|--------|
+| **Sink (rectangles)** | ✅ High | ✅ DONE — SinkZone class + 4 zones in default task |
+| **Blue thermals** | ✅ High | ✅ DONE — Invisible clouds via `visible` flag + 3 in default task |
+| **Balloons** | ✅ Done | ✅ Already working (pilot_type=3) |
+| **Thermal cycle (3 stages)** | ⚠️ Medium | ✅ DONE — Triggers now have building/full/dying phases |
+| **Vector maps** | ⚠️ Medium | Not started |
+| **Menus** | ✅ High | Not started |
+| **Fast depth sort** | ⚠️ Medium | Not needed (polygon count is low) |
+| **Exploding wings / falling** | ✅ High | Not started |
 
 ### Priority 3
 
-| Item | Feasibility | Notes |
-|------|-------------|-------|
-| **Total energy (ke + pe)** | ✅ High | Dan said he'd already written this. The polar model is in `GliderType`. Adding speed-trading (dive for speed, pull up for height) is ~2 hours of physics. |
-| **Caching/interpolation wrapper** | ✅ High | A generic `LookupTable` class with linear interp. Standard stuff. ~1 hour. |
-| **Lens flare** | ⚠️ Low | Possible in software rendering but would look dated. Better spent elsewhere. |
-| **Wave clouds** | ⚠️ Medium | Stationary lift bands downwind of hills. Straightforward if hills exist. ~2 hours after terrain is done. |
-| **Multi-cell clouds** | ✅ High | Merge nearby triggers into larger cloud shapes. ~2 hours. |
-| **Cloud algebra** | ⚠️ Medium | Conceptually simple (bigger thermal = stronger + wider), implementation touches several classes. ~3 hours. |
-| **Depth of convection / stratus** | ⚠️ Low | Atmospheric modelling beyond game scope. Cosmetic only. |
+| Item | Feasibility | Status |
+|------|-------------|--------|
+| **Total energy (ke + pe)** | ✅ High | ✅ DONE — Speed changes trade with altitude |
+| **Caching/interpolation wrapper** | ✅ High | Not started |
+| **Lens flare** | ⚠️ Low | Not started |
+| **Wave clouds** | ⚠️ Medium | Not started (needs terrain first) |
+| **Multi-cell clouds** | ✅ High | Not started |
+| **Cloud algebra** | ⚠️ Medium | Not started |
+| **Depth of convection / stratus** | ⚠️ Low | Not started |
 
 ---
 
