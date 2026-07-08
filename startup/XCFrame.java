@@ -25,8 +25,11 @@ import flightclub.framework3d.*;
    Either we connect to a game server or we create a number of AI gliders.
 */
 public class XCFrame extends ModelFrame {
-    public XCFrame(String task, int pilotType, String hostPort, int[] typeNums){ 
-		super("flightclub.client.XCModelViewer", "Flight Club", 700, 370, task, pilotType, hostPort, typeNums); 
+    static final int DEFAULT_WIDTH = 700;
+    static final int DEFAULT_HEIGHT = 370;
+
+    public XCFrame(String task, int pilotType, String hostPort, int[] typeNums, int width, int height){ 
+		super("flightclub.client.XCModelViewer", "Flight Club", width, height, task, pilotType, hostPort, typeNums); 
     }
 
     public static void main(String s[]) { 
@@ -66,8 +69,29 @@ public class XCFrame extends ModelFrame {
 			}
 			}
 		}
-		XCFrame x = new XCFrame(task, pilotType, hostPort, typeNums); 
+		XCFrame x = new XCFrame(task, pilotType, hostPort, typeNums,
+			getWindowWidth(), getWindowHeight()); 
     }	
+
+    /** Window width from -Dfc.width=N or FC_WIDTH env var, default 700. */
+    static int getWindowWidth() {
+		String prop = System.getProperty("fc.width");
+		if (prop == null) prop = System.getenv("FC_WIDTH");
+		if (prop != null) {
+			try { return parseInt(prop); } catch (Exception e) {}
+		}
+		return DEFAULT_WIDTH;
+    }
+
+    /** Window height from -Dfc.height=N or FC_HEIGHT env var, default 370. */
+    static int getWindowHeight() {
+		String prop = System.getProperty("fc.height");
+		if (prop == null) prop = System.getenv("FC_HEIGHT");
+		if (prop != null) {
+			try { return parseInt(prop); } catch (Exception e) {}
+		}
+		return DEFAULT_HEIGHT;
+    }
 
     /**
        VM 1.1 compliant methods for parsing numbers. Methods copied

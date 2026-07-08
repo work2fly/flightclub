@@ -22,5 +22,8 @@ echo "  java -cp out flightclub.startup.XCFrame [task] [pilot_type] [host:port] 
 echo ""
 echo "  pilot_type: 0=paraglider, 1=hangglider, 2=sailplane, 3=balloon"
 echo ""
+echo "Run with a bigger window:"
+echo "  java -Dfc.width=1280 -Dfc.height=720 -cp out flightclub.startup.XCFrame"
+echo ""
 echo "Run the Task Designer:"
 echo "  java -cp out flightclub.task.TaskFrame"
