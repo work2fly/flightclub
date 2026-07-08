@@ -254,6 +254,13 @@ class TaskDesigner extends Panel {
 
     private void parseFile() throws IOException {
 		InputStream is = taskEnv.openFile(taskID + ".task");
+		if (is == null) {
+			// openFile() swallows the underlying exception and returns null on
+			// failure (eg. file not found). Fail here with a proper checked
+			// IOException instead of letting a NullPointerException escape -
+			// callers (openTask()/init()) already catch IOException gracefully.
+			throw new IOException("Unable to open task file: " + taskID + ".task");
+		}
 		StreamTokenizer st = new StreamTokenizer(new BufferedReader(new InputStreamReader(is)));
 		st.eolIsSignificant(true);
 		st.commentChar('#');
@@ -518,10 +525,14 @@ class TaskCanvas extends Canvas {
     */
     void setSliders() {
 		System.out.println("Set sliders...");
-		TriggerPoint t;
-		try {
-			t = (TriggerPoint) clickPoint;
-		} catch (Exception e) { return; }
+		// clickPoint may be null (nothing clicked yet) or a point type
+		// other than TriggerPoint (eg. a turn point) - casting null never
+		// throws ClassCastException, so we must check explicitly rather
+		// than rely on the try/catch to guard against a null clickPoint.
+		if (!(clickPoint instanceof TriggerPoint)) {
+			return;
+		}
+		TriggerPoint t = (TriggerPoint) clickPoint;
 
 		taskDesigner.strengthCanvas.setValue(t.thermalStrength);
 		taskDesigner.lengthCanvas.setValue(t.cycleLength);
@@ -534,10 +545,12 @@ class TaskCanvas extends Canvas {
     */
     void getSliders() {
 		System.out.println("Get sliders...");
-		TriggerPoint t;
-		try {
-			t = (TriggerPoint) clickPoint;
-		} catch (Exception e) { return; }
+		// see comment in setSliders() - explicit instanceof check needed
+		// since clickPoint may be null and a null cast won't throw.
+		if (!(clickPoint instanceof TriggerPoint)) {
+			return;
+		}
+		TriggerPoint t = (TriggerPoint) clickPoint;
 
 		t.thermalStrength = taskDesigner.strengthCanvas.getValue();
 		t.cycleLength = taskDesigner.lengthCanvas.getValue();

@@ -1,0 +1,15 @@
+# Build output
+out/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.kiro/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Task designer temp files
+*.task
