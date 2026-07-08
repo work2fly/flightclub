@@ -25,8 +25,8 @@ import flightclub.framework3d.*;
    Either we connect to a game server or we create a number of AI gliders.
 */
 public class XCFrame extends ModelFrame {
-    static final int DEFAULT_WIDTH = 700;
-    static final int DEFAULT_HEIGHT = 370;
+    static final int DEFAULT_WIDTH = 1280;
+    static final int DEFAULT_HEIGHT = 720;
 
     public XCFrame(String task, int pilotType, String hostPort, int[] typeNums, int width, int height){ 
 		super("flightclub.client.XCModelViewer", "Flight Club", width, height, task, pilotType, hostPort, typeNums); 

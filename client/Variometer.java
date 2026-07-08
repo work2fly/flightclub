@@ -51,14 +51,20 @@ public class Variometer {
     }
 
     /** 
-		Beeps if we are going up. Which beep depends on how strong the lift is.  
+		Beeps if we are going up. Produces a sink tone if in strong sink.
+		Which beep depends on how strong the lift is.  
 	*/
     private void beep() {
 		float lift = glider.getSink() + glider.air[2];
 		if (lift > 0) {
 			xcModelViewer.modelEnv.play("beep" + whichStep(lift) + ".wav");
+		} else if (lift < SINK_THRESHOLD) {
+			xcModelViewer.modelEnv.play("sink");
 		}
     }
+
+    /** Threshold below which we play the sink tone. */
+    static final float SINK_THRESHOLD = -0.04f;
 
     private int whichStep(float lift) {
 		int step = -1;

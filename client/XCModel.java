@@ -262,6 +262,10 @@ public class XCModel extends Model {
 			}
 			break;
 		default:
+			// Escape key = quit
+			if (key == 27) { // KeyEvent.VK_ESCAPE
+				System.exit(0);
+			}
 		}
     }
 

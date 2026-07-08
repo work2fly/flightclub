@@ -33,7 +33,7 @@ This compiles all source files into `./out/` and copies the resource files (soun
 
 ## Run the Game
 
-### Default (hangglider, 700×370 window)
+### Default (hangglider, 1280×720 window)
 
 ```bash
 java -cp out flightclub.startup.XCFrame
@@ -53,14 +53,11 @@ java -cp out flightclub.startup.XCFrame default 3   # balloon
 Set window size with Java properties or environment variables:
 
 ```bash
-# Using Java properties (recommended)
-java -Dfc.width=1280 -Dfc.height=720 -cp out flightclub.startup.XCFrame
+# Using Java properties
+java -Dfc.width=1920 -Dfc.height=1080 -cp out flightclub.startup.XCFrame
 
 # Using environment variables
 FC_WIDTH=1920 FC_HEIGHT=1080 java -cp out flightclub.startup.XCFrame
-
-# Fullscreen-ish (set to your screen resolution)
-java -Dfc.width=1920 -Dfc.height=1080 -cp out flightclub.startup.XCFrame
 ```
 
 ### Set number of AI gliders
@@ -97,6 +94,7 @@ The task designer lets you create custom competition tasks with turn points and 
 | `q` | Fast simulation (offline only) |
 | `1`-`7` | Camera views (see below) |
 | `-` / `+` | Zoom out / in |
+| `Escape` | Quit the game |
 | Mouse drag | Rotate camera |
 
 ### Camera Views

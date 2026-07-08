@@ -78,10 +78,11 @@ public class ModelFrame extends Frame implements ModelEnv {
     }
 	
     private Clip[] beepClips = null;
+    private Clip sinkClip = null;
 
     /**
      * Pre-loads sound clips so they can be replayed without opening new lines.
-     * Called lazily on first play().
+     * Called lazily on first play(). Also generates a sink tone programmatically.
      */
     private void initSounds() {
 		beepClips = new Clip[4];
@@ -112,12 +113,50 @@ public class ModelFrame extends Frame implements ModelEnv {
 				System.out.println("Error loading sound beep" + i + ".wav: " + e);
 			}
 		}
+
+		// Generate a low-pitched sink tone (200Hz, 150ms)
+		try {
+			float sampleRate = 44100f;
+			int durationMs = 150;
+			int numSamples = (int)(sampleRate * durationMs / 1000);
+			byte[] buf = new byte[numSamples * 2]; // 16-bit mono
+			float freq = 200f; // low droning pitch
+			for (int i = 0; i < numSamples; i++) {
+				// sine wave with fade-in/out envelope
+				float envelope = 1.0f;
+				float fadeLen = numSamples * 0.1f;
+				if (i < fadeLen) envelope = i / fadeLen;
+				if (i > numSamples - fadeLen) envelope = (numSamples - i) / fadeLen;
+				short val = (short)(Short.MAX_VALUE * 0.4 * envelope *
+					Math.sin(2.0 * Math.PI * freq * i / sampleRate));
+				buf[i * 2] = (byte)(val & 0xFF);
+				buf[i * 2 + 1] = (byte)((val >> 8) & 0xFF);
+			}
+			AudioFormat fmt = new AudioFormat(44100f, 16, 1, true, false);
+			ByteArrayInputStream bais = new ByteArrayInputStream(buf);
+			AudioInputStream ais = new AudioInputStream(bais, fmt, numSamples);
+			sinkClip = AudioSystem.getClip();
+			sinkClip.open(ais);
+		} catch (Exception e) {
+			System.out.println("Error creating sink tone: " + e);
+		}
     }
 
     public void play(String s) {
 		if (beepClips == null) {
 			initSounds();
 		}
+
+		// Sink tone
+		if ("sink".equals(s)) {
+			if (sinkClip != null) {
+				sinkClip.stop();
+				sinkClip.setFramePosition(0);
+				sinkClip.start();
+			}
+			return;
+		}
+
 		// Map filename to clip index
 		int index = -1;
 		for (int i = 0; i < 4; i++) {
