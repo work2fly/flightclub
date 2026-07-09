@@ -71,7 +71,7 @@ public class GliderAI extends GliderTask {
 			return;
 		}
 
-		// glide to lift source - a cloud or hill
+		// glide to lift source - a cloud, hill or ridge
 		try {
 			Cloud cloud = (Cloud) ls;
 			this.moveManager.setCloud(cloud);
@@ -85,6 +85,11 @@ public class GliderAI extends GliderTask {
 		try {
 			Hill hill = (Hill) ls;
 			this.moveManager.setCircuit(hill.getCircuit());
+		} catch (Exception e) {;}
+
+		try {
+			Ridge ridge = (Ridge) ls;
+			this.moveManager.setCircuit(ridge.getCircuit());
 		} catch (Exception e) {;}
     }	
 
@@ -121,6 +126,11 @@ public class GliderAI extends GliderTask {
 		try {
 			Hill hill = (Hill) ls;
 			this.moveManager.setCircuit(hill.getCircuit());
+		} catch (Exception e) {;}
+
+		try {
+			Ridge ridge = (Ridge) ls;
+			this.moveManager.setCircuit(ridge.getCircuit());
 		} catch (Exception e) {;}
     }	
 

@@ -13,3 +13,6 @@ Thumbs.db
 
 # Task designer temp files
 *.task
+
+# Scratch space (downloaded archives, investigation artifacts)
+tmp/

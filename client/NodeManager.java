@@ -82,6 +82,27 @@ class NodeManager {
 				}
 			}
 		}
+
+		/*
+		   Register ridges as permanent lift sources with any node whose
+		   area overlaps the ridge's midpoint or either end. Ridges (unlike
+		   clouds) don't come and go, so we add them once here rather than
+		   at runtime.
+		*/
+		if (task.ridges != null) {
+			for (int i = 0; i < task.ridges.length; i++) {
+				Ridge ridge = task.ridges[i];
+				float[] mid = ridge.getP();
+				for (int j = 0; j < nodes.length; j++) {
+					Node node = nodes[j];
+					if (node.contains(ridge.x1, ridge.y1)
+						|| node.contains(ridge.x2, ridge.y2)
+						|| node.contains(mid[0], mid[1])) {
+						node.add(ridge);
+					}
+				}
+			}
+		}
     }
 
     /**

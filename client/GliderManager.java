@@ -97,10 +97,12 @@ public class GliderManager implements ClockObserver {
 		pNode_ = 0; 
     }
 
+    static final float TURBULENCE_DT = 1.0f/20; // approx tick interval for jitter scaling
     /**
        Sets the vertical air movement for a glider. We search the loaded
        nodes for lift sources (rather than searching the entire model.)
-       Also checks task-level sink zones.
+       Also checks task-level sink zones and ridges (slope lift/sink),
+       ground height from terrain, and leeward turbulence.
      */
     private void setLift(Glider glider, Node[] nodes) {
 		if (glider == null) return;
@@ -130,6 +132,29 @@ public class GliderManager implements ClockObserver {
 				}
 			}
 		}
+
+		// ridges - terrain collision (ground height), slope lift/sink, turbulence
+		Ridge[] ridges = xcModelViewer.xcModel.task.ridges;
+		float ground = 0;
+		if (ridges != null) {
+			for (int i = 0; i < ridges.length; i++) {
+				Ridge r = ridges[i];
+				float gh = r.getGroundHeight(p[0], p[1]);
+				if (gh > ground) ground = gh;
+
+				if (r.contains(p)) {
+					lift += r.getLift(p);
+					float turb = r.getTurbulence(p);
+					if (turb > 0) {
+						// mechanical turbulence: random jitter, stronger closer to rotor
+						p[0] += (float) (Math.random() - 0.5) * turb * TURBULENCE_DT;
+						p[1] += (float) (Math.random() - 0.5) * turb * TURBULENCE_DT;
+						lift += (float) (Math.random() - 0.5) * turb * 0.5f;
+					}
+				}
+			}
+		}
+		glider.setGround(ground);
 
 		// pass message to glider
 		glider.air[2] = lift;

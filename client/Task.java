@@ -21,6 +21,7 @@ public class Task implements CameraSubject {
     RoadManager roadManager;
     Trigger[] triggers;
     SinkZone[] sinkZones;
+    Ridge[] ridges;
     float wind_x, wind_y;
 
     // for the default course
@@ -77,14 +78,35 @@ public class Task implements CameraSubject {
 		float[][] r2 = new float[][] {{0, x, 0}, {x, 1.4f * x, 0}, {2 * x, 1.2f * x, 0}, {3 * x, 2 * x, 0}, {4 * x, 2 * x,0}};
 		roadManager = new RoadManager(xcModelViewer, new float[][][] {r1, r2});
 
-		// sink zones - rectangles of descending air between thermals
+		// sink zones - small pockets of descending air placed at the center
+		// of each hexagon cell, well clear of the trigger points themselves
+		// (which sit roughly 7+ units from the cell center - see flatLand()).
+		// A previous version used large zones aligned with the thermal grid
+		// which overlapped the trigger clusters directly, cancelling out
+		// the lift gliders were trying to climb in.
 		sinkZones = new SinkZone[4];
-		float sinkW = HEXAGON * 0.4f;
-		float sinkH = HEXAGON * 0.6f;
-		sinkZones[0] = new SinkZone(xcModelViewer, HEXAGON * 0.5f, HEXAGON * 1.5f, sinkW, sinkH, 1.5f);
-		sinkZones[1] = new SinkZone(xcModelViewer, HEXAGON * 1.5f, HEXAGON * 0.5f, sinkW, sinkH, 1.0f);
-		sinkZones[2] = new SinkZone(xcModelViewer, HEXAGON * 2.5f, HEXAGON * 2.5f, sinkW, sinkH, 2.0f);
-		sinkZones[3] = new SinkZone(xcModelViewer, HEXAGON * 3.0f, HEXAGON * 1.0f, sinkW, sinkH, 1.2f);
+		float sinkSize = HEXAGON * 0.25f; // small enough to clear trigger points
+		sinkZones[0] = new SinkZone(xcModelViewer, HEXAGON * 0.5f, HEXAGON * 1.5f, sinkSize, sinkSize, 1.5f);
+		sinkZones[1] = new SinkZone(xcModelViewer, HEXAGON * 1.5f, HEXAGON * 0.5f, sinkSize, sinkSize, 1.0f);
+		sinkZones[2] = new SinkZone(xcModelViewer, HEXAGON * 2.5f, HEXAGON * 2.5f, sinkSize, sinkSize, 2.0f);
+		sinkZones[3] = new SinkZone(xcModelViewer, HEXAGON * 3.0f, HEXAGON * 1.0f, sinkSize, sinkSize, 1.2f);
+
+		// ridges - placed within easy reach of launch (x,x) so they can
+		// actually be tested/used, but off the direct line to the first
+		// turn point (x,x)->(x,2x), which runs straight north at x-coord x.
+		ridges = new Ridge[2];
+		// a small hill just east of launch, ~9 units away - reachable on
+		// first glide from any glider type
+		ridges[0] = new Ridge(xcModelViewer,
+			x + 6, x + 3, x + 6, x + 9,
+			Cloud.CLOUDBASE * 1.0f, Cloud.CLOUDBASE * 1.8f, Cloud.CLOUDBASE * 1.2f);
+		// a longer mountain ridge further out along the second leg
+		ridges[1] = new Ridge(xcModelViewer,
+			x + 8, 1.6f * x, x + 8, 1.9f * x,
+			Cloud.CLOUDBASE * 1.5f, Cloud.CLOUDBASE * 2.2f, Cloud.CLOUDBASE * 1.4f);
+		for (int i = 0; i < ridges.length; i++) {
+			ridges[i].renderMe();
+		}
   
 		nodeManager = new NodeManager(xcModelViewer, this);
     }

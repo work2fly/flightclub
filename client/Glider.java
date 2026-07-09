@@ -200,11 +200,6 @@ public class Glider extends MovingBody {
 				energySpeed = speed;
 			}
 
-			// hit the spuds ?
-			if (p[2] <= ground) {
-				hitTheSpuds();
-			}
-
 			timeFlying += dt;
 
 		} else {
@@ -213,6 +208,16 @@ public class Glider extends MovingBody {
 
 		// motion due to velocity (and roll)
 		super.tick(t, dt);
+
+		// hit the spuds ? Checked *after* all motion for this tick has been
+		// applied (air + energy trading + glide), using the final position,
+		// so fast movement can't tunnel through the ground undetected.
+		// Also clamp position to the surface rather than leaving the
+		// glider embedded in/below the terrain.
+		if (!landed && p[2] <= ground) {
+			p[2] = ground;
+			hitTheSpuds();
+		}
     }
 
     public final void setGround(float g) { ground = g; }
